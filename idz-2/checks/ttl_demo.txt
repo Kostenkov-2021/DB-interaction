@@ -1,0 +1,28 @@
+Команда:
+sh scripts/ttl_demo.sh
+
+Логика демонстрации:
+1. Вставить 1 000 строк с датой 2025-01-01 в idz2.orders_ttl.
+2. Посчитать строки старше today() - 90.
+3. Сохранить состояние system.parts.
+4. Выполнить OPTIMIZE TABLE idz2.orders_ttl FINAL.
+5. Повторно посчитать старые строки и сохранить состояние system.parts.
+
+Реальный результат:
+
+stage             old_rows
+before_optimize   1000
+
+stage             partition  part          active  rows  min_date    max_date
+before_optimize   202501     202501_6_6_0  0       1000  2025-01-01  2025-01-01
+before_optimize   202501     202501_6_6_1  1          0  2025-01-01  2025-01-01
+
+stage             old_rows
+after_optimize    0
+
+stage             partition  part          active  rows  min_date    max_date
+after_optimize    202501     202501_6_6_2  1          0  1970-01-01  1970-01-01
+
+Вывод:
+TTL применяется во время слияний частей. Команда OPTIMIZE FINAL принудительно запускает слияние,
+после чего строки старше 90 дней удаляются.

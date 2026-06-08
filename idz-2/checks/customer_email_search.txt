@@ -1,0 +1,14 @@
+Запрос:
+SELECT customer_id, any(customer_name) AS customer_name, customer_email,
+       countDistinct(order_id) AS orders_count, sum(line_total) AS revenue
+FROM idz2.orders_flat
+WHERE positionCaseInsensitive(customer_email, 'customer120') > 0
+GROUP BY customer_id, customer_email
+ORDER BY customer_id;
+
+Реальный результат:
+
+customer_id  customer_name  customer_email          orders_count  revenue
+120          Customer 120   customer120@shop.test   4000          139916000.00
+
+Время выполнения: 0.038 с. Это сканирование, а не индексный OLTP-поиск.

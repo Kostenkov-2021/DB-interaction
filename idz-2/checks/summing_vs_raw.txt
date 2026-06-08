@@ -1,0 +1,36 @@
+Запрос к плоской таблице фактов:
+SELECT toStartOfMonth(order_date) AS month, category, region,
+       sum(quantity) AS total_qty, sum(line_total) AS total_sales
+FROM idz2.orders_flat
+GROUP BY month, category, region
+ORDER BY month, category, region
+LIMIT 20;
+
+Запрос к предагрегированной таблице SummingMergeTree:
+SELECT month, category, region,
+       sum(total_qty) AS total_qty, sum(total_sales) AS total_sales
+FROM idz2.monthly_sales
+GROUP BY month, category, region
+ORDER BY month, category, region
+LIMIT 20;
+
+Результат:
+Оба запроса возвращают одинаковые сгруппированные значения. Второй запрос читает уже агрегированную
+таблицу monthly_sales, которую наполняет mv_monthly_sales, поэтому сканирует заметно меньше строк,
+чем orders_flat.
+
+Фрагмент реального результата из обоих запросов:
+
+month       category     region    total_qty  total_sales
+2026-01-01  Accessories  Region 2  33336       51670800.00
+2026-01-01  Accessories  Region 4  33336      140011200.00
+2026-01-01  Accessories  Region 6  33336       51670800.00
+2026-01-01  Accessories  Region 8  33336      140011200.00
+2026-01-01  Computers    Region 1  10000     1250000000.00
+2026-01-01  Computers    Region 3  25002      245019600.00
+2026-01-01  Computers    Region 5  10001     1250125000.00
+2026-01-01  Computers    Region 7  24999      244990200.00
+
+Реальное время выполнения:
+агрегация orders_flat: 0.091 с
+агрегация monthly_sales: 0.016 с

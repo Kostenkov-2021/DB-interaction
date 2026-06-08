@@ -1,0 +1,19 @@
+Запрос:
+WITH order_totals AS
+(
+    SELECT order_id, sum(line_total) AS order_total
+    FROM idz2.orders_flat
+    GROUP BY order_id
+)
+SELECT
+    quantileExact(0.95)(order_total) AS p95_order_value,
+    quantileExact(0.99)(order_total) AS p99_order_value,
+    avg(order_total) AS avg_order_value
+FROM order_totals;
+
+Реальный результат:
+
+p95_order_value  p99_order_value  avg_order_value
+170200.00        170200.00        130599.7117005766
+
+Время выполнения: 0.159 с.

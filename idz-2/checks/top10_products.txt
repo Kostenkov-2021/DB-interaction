@@ -1,0 +1,22 @@
+Запрос:
+SELECT product_id, product_name, sum(quantity) AS sold_qty, sum(line_total) AS revenue
+FROM idz2.orders_flat
+GROUP BY product_id, product_name
+ORDER BY revenue DESC
+LIMIT 10;
+
+Реальный результат на 1 000 000 сгенерированных строк:
+
+product_id  product_name             sold_qty  revenue
+1           Laptop Pro 15              83334   10416750000.00
+10          Tablet Air                166666    9333296000.00
+9           Smartphone X               83333    6999972000.00
+8           Headphones                333332    3833318000.00
+5           Monitor 27                 83333    2583323000.00
+11          External SSD 1TB          249999    2449990200.00
+12          Router AX3000             333332    2399990400.00
+7           Web Camera                249999    1974992100.00
+3           Mechanical Keyboard       250002    1625013000.00
+4           USB-C Hub                 333336    1400011200.00
+
+Время выполнения: 0.044 с.

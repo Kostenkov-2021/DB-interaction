@@ -1,0 +1,36 @@
+Запрос:
+SELECT column,
+       formatReadableSize(sum(column_data_compressed_bytes)) AS compressed,
+       formatReadableSize(sum(column_data_uncompressed_bytes)) AS uncompressed,
+       round(sum(column_data_uncompressed_bytes) / nullIf(sum(column_data_compressed_bytes), 0), 2) AS ratio
+FROM system.parts_columns
+WHERE database = 'idz2' AND table = 'orders_flat' AND active
+GROUP BY column
+ORDER BY sum(column_data_uncompressed_bytes) DESC;
+
+Реальный результат:
+
+column           compressed  uncompressed  ratio
+product_name     11.16 KiB   12.40 MiB     1137.16
+customer_name    436.03 KiB  12.40 MiB     29.12
+order_id         83.04 KiB   7.63 MiB      94.09
+price            10.64 KiB   7.63 MiB      734.08
+customer_id      496.56 KiB  7.63 MiB      15.73
+product_id       9.87 KiB    7.63 MiB      791.30
+line_total       10.62 KiB   7.63 MiB      735.50
+quantity         18.90 KiB   3.81 MiB      206.69
+order_datetime   44.84 KiB   3.81 MiB      87.12
+order_date       3.45 KiB    1.91 MiB      566.73
+customer_email   45.96 KiB   994.71 KiB   21.65
+region           28.22 KiB   978.95 KiB   34.69
+category         1.84 KiB    978.84 KiB   531.18
+order_status     3.65 KiB    978.78 KiB   268.13
+
+Размеры таблиц:
+orders_flat      1.18 MiB    76.32 MiB     1 000 000 строк
+orders_ttl       652.97 KiB  41.19 MiB       539 977 активных строк
+monthly_sales    2.48 KiB    2.87 KiB            100 строк
+
+Пояснение:
+Колонки LowCardinality сжимаются лучше всего, потому что содержат небольшой словарь повторяющихся значений.
+ORDER BY группирует похожие category/status/time-значения рядом, что улучшает работу кодеков ZSTD и Delta.
