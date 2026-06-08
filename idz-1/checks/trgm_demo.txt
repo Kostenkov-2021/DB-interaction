@@ -1,0 +1,18 @@
+Демонстрация `pg_trgm`
+
+Без `pg_trgm` условие:
+
+```sql
+WHERE name ILIKE '%Customer 12%'
+```
+
+обычно требует последовательного сканирования, потому что ведущий символ `%` не позволяет эффективно использовать обычный B-tree индекс.
+
+С `pg_trgm`:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX idx_customers_name_trgm ON customers USING gin (name gin_trgm_ops);
+```
+
+тот же поиск по подстроке может использовать GIN-индекс по триграммам. На маленьком учебном наборе PostgreSQL иногда всё равно выбирает `Seq Scan`, потому что таблицу дешевле прочитать целиком. В `sql/05_indexes.sql` это явно показано: обычный план остаётся последовательным сканированием, а при `SET enable_seqscan = off` появляется `Bitmap Index Scan` по `idx_customers_name_trgm`.
