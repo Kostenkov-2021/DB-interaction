@@ -1,2 +1,9 @@
-# DB-interaction
-This repository contains materials intended for Data bases interaction Ithmo university course
+# Взаимодействие с базами данных
+
+Репозиторий содержит материалы по курсу ИТМО «Взаимодействие с базами данных».
+
+## Структура
+
+- `idz-1/` — PostgreSQL: нормализация, индексы, OLTP-запросы и денормализация.
+- `idz-2/` — ClickHouse: колоночное хранение, движки MergeTree и OLAP-аналитика.
+- `idz-3/` — ClickHouse: репликация, ClickHouse Keeper и проверка отказоустойчивости.

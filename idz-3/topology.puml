@@ -1,0 +1,41 @@
+@startuml
+title ИДЗ-3: топология репликации ClickHouse
+
+skinparam componentStyle rectangle
+
+node "Docker-сеть" {
+  database "ClickHouse\nclickhouse1\nreplica=node1" as ch1
+  database "ClickHouse\nclickhouse2\nreplica=node2" as ch2
+  database "ClickHouse\nclickhouse3\nreplica=node3" as ch3
+
+  queue "Keeper\nkeeper1\nserver_id=1" as k1
+  queue "Keeper\nkeeper2\nserver_id=2" as k2
+  queue "Keeper\nkeeper3\nserver_id=3" as k3
+}
+
+ch1 -down-> k1 : 9181
+ch1 -down-> k2 : 9181
+ch1 -down-> k3 : 9181
+ch2 -down-> k1
+ch2 -down-> k2
+ch2 -down-> k3
+ch3 -down-> k1
+ch3 -down-> k2
+ch3 -down-> k3
+
+k1 <--> k2 : RAFT 9234
+k2 <--> k3 : RAFT 9234
+k1 <--> k3 : RAFT 9234
+
+ch1 <--> ch2 : 1 шард, 3 реплики
+ch2 <--> ch3
+ch1 <--> ch3
+
+note bottom
+Путь ReplicatedMergeTree:
+/clickhouse/tables/{shard}/idz3/events
+
+Макросы ClickHouse:
+cluster=idz3_cluster, shard=01, replica=node1..node3
+end note
+@enduml

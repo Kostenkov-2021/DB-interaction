@@ -1,0 +1,7 @@
+<clickhouse>
+    <macros>
+        <cluster>idz3_cluster</cluster>
+        <shard>01</shard>
+        <replica>node1</replica>
+    </macros>
+</clickhouse>

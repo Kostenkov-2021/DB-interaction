@@ -1,0 +1,110 @@
+services:
+  keeper1:
+    image: clickhouse/clickhouse-keeper:24.12
+    container_name: idz3-keeper1
+    hostname: keeper1
+    volumes:
+      - ./config/keeper/keeper1.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+      - keeper1_data:/var/lib/clickhouse-keeper
+    ports:
+      - "9181:9181"
+
+  keeper2:
+    image: clickhouse/clickhouse-keeper:24.12
+    container_name: idz3-keeper2
+    hostname: keeper2
+    volumes:
+      - ./config/keeper/keeper2.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+      - keeper2_data:/var/lib/clickhouse-keeper
+    ports:
+      - "9182:9181"
+
+  keeper3:
+    image: clickhouse/clickhouse-keeper:24.12
+    container_name: idz3-keeper3
+    hostname: keeper3
+    volumes:
+      - ./config/keeper/keeper3.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+      - keeper3_data:/var/lib/clickhouse-keeper
+    ports:
+      - "9183:9181"
+
+  clickhouse1:
+    image: clickhouse/clickhouse-server:24.12
+    container_name: idz3-clickhouse1
+    hostname: clickhouse1
+    depends_on:
+      - keeper1
+      - keeper2
+      - keeper3
+    volumes:
+      - clickhouse1_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/node1_macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/idz3-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18123:8123"
+      - "19000:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  clickhouse2:
+    image: clickhouse/clickhouse-server:24.12
+    container_name: idz3-clickhouse2
+    hostname: clickhouse2
+    depends_on:
+      - keeper1
+      - keeper2
+      - keeper3
+    volumes:
+      - clickhouse2_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/node2_macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/idz3-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18124:8123"
+      - "19001:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  clickhouse3:
+    image: clickhouse/clickhouse-server:24.12
+    container_name: idz3-clickhouse3
+    hostname: clickhouse3
+    depends_on:
+      - keeper1
+      - keeper2
+      - keeper3
+    volumes:
+      - clickhouse3_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/node3_macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/idz3-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18125:8123"
+      - "19002:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+volumes:
+  keeper1_data:
+  keeper2_data:
+  keeper3_data:
+  clickhouse1_data:
+  clickhouse2_data:
+  clickhouse3_data:
