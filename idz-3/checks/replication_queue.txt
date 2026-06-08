@@ -1,0 +1,23 @@
+Row 1:
+──────
+database:               idz3
+table:                  events
+replica_name:           node3
+position:               0
+node_name:              queue-0000000028
+type:                   GET_PART
+create_time:            2026-06-08 15:03:33
+required_quorum:        0
+source_replica:         node1
+new_part_name:          202601_28_28_0
+parts_to_merge:         []
+is_detach:              0
+is_currently_executing: 0
+num_tries:              0
+last_exception:         
+last_exception_time:    1970-01-01 00:00:00
+last_attempt_time:      1970-01-01 00:00:00
+num_postponed:          0
+postpone_reason:        
+last_postpone_time:     1970-01-01 00:00:00
+merge_type:             

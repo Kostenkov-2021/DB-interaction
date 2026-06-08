@@ -1,0 +1,78 @@
+
+===== B1 stop keeper 3 =====
+ Container idz3-keeper3 Stopping 
+ Container idz3-keeper3 Stopped 
+
+===== B2 quorum is alive: keeper1/keeper2 mntr =====
+zk_version	v24.12.6.70-stable-834cccbc6e8c7f0db21ec500394c3a567b83482f
+zk_avg_latency	10
+zk_max_latency	7422
+zk_min_latency	0
+zk_packets_received	2203
+zk_packets_sent	2290
+zk_num_alive_connections	2
+zk_outstanding_requests	0
+zk_server_state	follower
+zk_znode_count	338
+zk_watch_count	6
+zk_ephemerals_count	4
+zk_approximate_data_size	85407
+zk_key_arena_size	0
+zk_latest_snapshot_size	577
+zk_open_file_descriptor_count	65
+zk_max_file_descriptor_count	1048576
+zk_version	v24.12.6.70-stable-834cccbc6e8c7f0db21ec500394c3a567b83482f
+zk_avg_latency	1
+zk_max_latency	25
+zk_min_latency	0
+zk_packets_received	54
+zk_packets_sent	56
+zk_num_alive_connections	1
+zk_outstanding_requests	0
+zk_server_state	leader
+zk_znode_count	338
+zk_watch_count	3
+zk_ephemerals_count	4
+zk_approximate_data_size	85407
+zk_key_arena_size	0
+zk_latest_snapshot_size	577
+zk_open_file_descriptor_count	61
+zk_max_file_descriptor_count	1048576
+zk_followers	2
+zk_synced_followers	2
+
+===== B3 insert works with 2 of 3 Keeper nodes =====
+clickhouse1	experiment_b_quorum	185000	6412460213133367291
+
+===== B4 stop keeper 2: quorum is lost =====
+ Container idz3-keeper2 Stopping 
+ Container idz3-keeper2 Stopped 
+
+===== B5 insert must fail without quorum =====
+Received exception from server (version 24.12.6):
+Code: 242. DB::Exception: Received from localhost:9000. DB::Exception: Table is in readonly mode: replica_path=/clickhouse/tables/01/idz3/events/replicas/node1. (TABLE_IS_READ_ONLY)
+(query: INSERT INTO idz3.events
+SELECT
+    toDateTime('2026-01-01 00:00:00') + number + 400000 AS event_time,
+    multiIf(
+        number % 5 = 0, 'page_view',
+        number % 5 = 1, 'add_to_cart',
+        number % 5 = 2, 'checkout',
+        number % 5 = 3, 'payment',
+        'logout'
+    ) AS event_type,
+    toUInt64((number % 25000) + 1) AS user_id,
+    concat('batch=experiment_b_no_quorum; event_id=', toString(number + 400000), '; source=', hostName()) AS payload
+FROM numbers(1000);)
+insert_exit_code=242
+
+===== B6 local SELECT still works =====
+   ┌─host────────┬───rows─┐
+1. │ clickhouse1 │ 185000 │
+   └─────────────┴────────┘
+
+===== B7 restore Keeper quorum =====
+ Container idz3-keeper3 Starting 
+ Container idz3-keeper2 Starting 
+ Container idz3-keeper2 Started 
+ Container idz3-keeper3 Started 

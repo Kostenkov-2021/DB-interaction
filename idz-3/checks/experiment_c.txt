@@ -1,0 +1,27 @@
+
+===== C1 stop replica 2 =====
+ Container idz3-clickhouse2 Stopping 
+ Container idz3-clickhouse2 Stopped 
+
+===== C2 insert rows through replica 1 =====
+clickhouse1	experiment_c	200000	8121576608350026723
+
+===== C3 start replica 2 and synchronize =====
+ Container idz3-clickhouse2 Starting 
+ Container idz3-clickhouse2 Started 
+
+===== C4 deterministic Keeper log prevents conflicts =====
+Row 1:
+──────
+replica_name:    node2
+queue_size:      0
+zookeeper_path:  /clickhouse/tables/01/idz3/events
+replica_path:    /clickhouse/tables/01/idz3/events/replicas/node2
+columns_version: -1
+
+===== C5 all replicas have the same row count and hash =====
+   ┌─host────────┬───rows─┬───────────data_hash─┐
+1. │ clickhouse1 │ 200000 │ 8121576608350026723 │
+2. │ clickhouse2 │ 200000 │ 8121576608350026723 │
+3. │ clickhouse3 │ 200000 │ 8121576608350026723 │
+   └─────────────┴────────┴─────────────────────┘

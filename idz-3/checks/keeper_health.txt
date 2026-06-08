@@ -1,0 +1,61 @@
+
+===== keeper1 ruok =====
+imok
+===== keeper1 mntr =====
+zk_version	v24.12.6.70-stable-834cccbc6e8c7f0db21ec500394c3a567b83482f
+zk_avg_latency	10
+zk_max_latency	7422
+zk_min_latency	0
+zk_packets_received	2115
+zk_packets_sent	2194
+zk_num_alive_connections	2
+zk_outstanding_requests	0
+zk_server_state	follower
+zk_znode_count	331
+zk_watch_count	6
+zk_ephemerals_count	4
+zk_approximate_data_size	83486
+zk_key_arena_size	0
+zk_latest_snapshot_size	577
+zk_open_file_descriptor_count	65
+zk_max_file_descriptor_count	1048576
+
+===== keeper2 mntr =====
+zk_version	v24.12.6.70-stable-834cccbc6e8c7f0db21ec500394c3a567b83482f
+zk_avg_latency	0
+zk_max_latency	0
+zk_min_latency	0
+zk_packets_received	0
+zk_packets_sent	0
+zk_num_alive_connections	0
+zk_outstanding_requests	0
+zk_server_state	leader
+zk_znode_count	331
+zk_watch_count	0
+zk_ephemerals_count	4
+zk_approximate_data_size	83486
+zk_key_arena_size	0
+zk_latest_snapshot_size	577
+zk_open_file_descriptor_count	58
+zk_max_file_descriptor_count	1048576
+zk_followers	2
+zk_synced_followers	2
+
+===== keeper3 mntr =====
+zk_version	v24.12.6.70-stable-834cccbc6e8c7f0db21ec500394c3a567b83482f
+zk_avg_latency	6
+zk_max_latency	339
+zk_min_latency	0
+zk_packets_received	273
+zk_packets_sent	289
+zk_num_alive_connections	1
+zk_outstanding_requests	0
+zk_server_state	follower
+zk_znode_count	331
+zk_watch_count	3
+zk_ephemerals_count	0
+zk_approximate_data_size	83486
+zk_key_arena_size	0
+zk_latest_snapshot_size	7101
+zk_open_file_descriptor_count	59
+zk_max_file_descriptor_count	1048576
