@@ -1,0 +1,83 @@
+Демонстрация индексов после выполнения `sql/05_indexes.sql`.
+
+Файл содержит фактический вывод `EXPLAIN ANALYZE` из PostgreSQL. Английские названия узлов плана (`Seq Scan`, `Index Scan`, `Bitmap Index Scan`) оставлены как есть, потому что это терминология самого PostgreSQL.
+
+Что показано:
+1. На маленькой таблице планировщик может выбрать `Seq Scan` даже при наличии индекса.
+2. При `SET enable_seqscan = off` видно, что `idx_customers_email` применим для точного поиска по email.
+3. Partial index `idx_orders_active_status` используется для выборки активных заказов.
+4. B-tree индекс не помогает для `ILIKE '%...%'` с ведущим символом `%`.
+5. GIN-индекс `idx_customers_name_trgm` через `pg_trgm` применим для поиска по подстроке.
+
+SET
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ANALYZE
+ANALYZE
+ANALYZE
+ANALYZE
+                                             QUERY PLAN                                             
+----------------------------------------------------------------------------------------------------
+ Seq Scan on customers  (cost=0.00..6.12 rows=1 width=56) (actual time=0.039..0.057 rows=1 loops=1)
+   Filter: (email = 'customer120@shop.test'::text)
+   Rows Removed by Filter: 249
+ Planning Time: 2.966 ms
+ Execution Time: 0.101 ms
+(5 rows)
+
+SET
+                                                           QUERY PLAN                                                           
+--------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_customers_email on customers  (cost=0.27..8.29 rows=1 width=56) (actual time=0.755..0.759 rows=1 loops=1)
+   Index Cond: (email = 'customer120@shop.test'::text)
+ Planning Time: 0.217 ms
+ Execution Time: 0.783 ms
+(4 rows)
+
+RESET
+                                                                     QUERY PLAN                                                                      
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.15..1.78 rows=20 width=21) (actual time=0.057..0.081 rows=20 loops=1)
+   ->  Index Scan Backward using idx_orders_active_status on orders  (cost=0.15..58.96 rows=721 width=21) (actual time=0.056..0.075 rows=20 loops=1)
+ Planning Time: 3.238 ms
+ Execution Time: 0.104 ms
+(4 rows)
+
+                                              QUERY PLAN                                              
+------------------------------------------------------------------------------------------------------
+ Seq Scan on customers  (cost=0.00..6.12 rows=10 width=39) (actual time=0.119..0.224 rows=10 loops=1)
+   Filter: (name ~~* '%Customer 12%'::text)
+   Rows Removed by Filter: 240
+ Planning Time: 5.114 ms
+ Execution Time: 0.250 ms
+(5 rows)
+
+CREATE EXTENSION
+CREATE INDEX
+ANALYZE
+                                              QUERY PLAN                                              
+------------------------------------------------------------------------------------------------------
+ Seq Scan on customers  (cost=0.00..6.12 rows=10 width=39) (actual time=0.135..0.267 rows=10 loops=1)
+   Filter: (name ~~* '%Customer 12%'::text)
+   Rows Removed by Filter: 240
+ Planning Time: 0.318 ms
+ Execution Time: 0.283 ms
+(5 rows)
+
+SET
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on customers  (cost=40.08..43.20 rows=10 width=39) (actual time=1.084..1.099 rows=10 loops=1)
+   Recheck Cond: (name ~~* '%Customer 12%'::text)
+   Heap Blocks: exact=1
+   ->  Bitmap Index Scan on idx_customers_name_trgm  (cost=0.00..40.08 rows=10 width=0) (actual time=1.058..1.059 rows=10 loops=1)
+         Index Cond: (name ~~* '%Customer 12%'::text)
+ Planning Time: 0.312 ms
+ Execution Time: 2.981 ms
+(7 rows)
+
+RESET
+RESET

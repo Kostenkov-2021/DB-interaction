@@ -1,0 +1,125 @@
+Демонстрация OLTP-запросов до добавления дополнительных индексов.
+
+Файл содержит фактический вывод `EXPLAIN ANALYZE` из PostgreSQL. Английские служебные слова вроде `Seq Scan`, `Index Scan`, `Planning Time`, `Execution Time` оставлены без перевода, потому что это машинный вывод СУБД.
+
+Проверяются:
+1. Создание заказа через транзакцию, CTE, `RETURNING` и `SELECT ... FOR UPDATE`.
+2. Обновление статуса заказа.
+3. Получение заказа через JOIN по четырём таблицам.
+4. Отчёт "топ-10 товаров".
+5. Поиск клиента по email и по подстроке имени.
+
+BEGIN
+                                                                                    QUERY PLAN                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Insert on order_items  (cost=44.11..44.16 rows=0 width=0) (actual time=0.580..0.584 rows=0 loops=1)
+   CTE selected_customer
+     ->  Index Scan using customers_email_key on customers  (cost=0.28..8.29 rows=1 width=4) (actual time=0.020..0.021 rows=1 loops=1)
+           Index Cond: (email = 'customer001@shop.test'::text)
+   CTE locked_products
+     ->  LockRows  (cost=8.32..13.68 rows=2 width=58) (actual time=0.064..0.067 rows=2 loops=1)
+           ->  Bitmap Heap Scan on products  (cost=8.32..13.66 rows=2 width=58) (actual time=0.036..0.037 rows=2 loops=1)
+                 Recheck Cond: (name = ANY ('{"Wireless Mouse","Desk Mat"}'::text[]))
+                 Heap Blocks: exact=1
+                 ->  Bitmap Index Scan on products_name_key  (cost=0.00..8.32 rows=2 width=0) (actual time=0.020..0.020 rows=2 loops=1)
+                       Index Cond: (name = ANY ('{"Wireless Mouse","Desk Mat"}'::text[]))
+   CTE new_order
+     ->  Insert on orders  (cost=13.93..13.96 rows=1 width=64) (actual time=0.358..0.361 rows=1 loops=1)
+           ->  Subquery Scan on "*SELECT*"  (cost=13.93..13.96 rows=1 width=64) (actual time=0.102..0.104 rows=1 loops=1)
+                 ->  Aggregate  (cost=13.93..13.94 rows=1 width=80) (actual time=0.101..0.103 rows=1 loops=1)
+                       InitPlan 3 (returns $3)
+                         ->  CTE Scan on selected_customer  (cost=0.00..0.02 rows=1 width=4) (actual time=0.020..0.021 rows=1 loops=1)
+                       InitPlan 5 (returns $5)
+                         ->  Limit  (cost=13.84..13.84 rows=1 width=4) (actual time=0.063..0.065 rows=1 loops=1)
+                               InitPlan 4 (returns $4)
+                                 ->  CTE Scan on selected_customer selected_customer_1  (cost=0.00..0.02 rows=1 width=4) (actual time=0.004..0.004 rows=1 loops=1)
+                               ->  Sort  (cost=13.82..13.84 rows=6 width=4) (actual time=0.063..0.063 rows=1 loops=1)
+                                     Sort Key: addresses.address_id
+                                     Sort Method: top-N heapsort  Memory: 25kB
+                                     ->  Bitmap Heap Scan on addresses  (cost=4.32..13.79 rows=6 width=4) (actual time=0.012..0.014 rows=5 loops=1)
+                                           Recheck Cond: (customer_id = $4)
+                                           Heap Blocks: exact=1
+                                           ->  Bitmap Index Scan on addresses_customer_id_address_key  (cost=0.00..4.32 rows=6 width=0) (actual time=0.010..0.010 rows=5 loops=1)
+                                                 Index Cond: (customer_id = $4)
+                       ->  CTE Scan on locked_products locked_products_1  (cost=0.00..0.04 rows=2 width=48) (actual time=0.001..0.003 rows=2 loops=1)
+   InitPlan 7 (returns $8)
+     ->  CTE Scan on new_order  (cost=0.00..0.02 rows=1 width=4) (actual time=0.359..0.359 rows=1 loops=1)
+   InitPlan 8 (returns $9)
+     ->  Index Scan using products_name_key on products products_1  (cost=0.15..8.17 rows=1 width=4) (actual time=0.014..0.014 rows=1 loops=1)
+           Index Cond: (name = 'Wireless Mouse'::text)
+   ->  CTE Scan on locked_products  (cost=0.00..0.04 rows=2 width=28) (actual time=0.443..0.444 rows=2 loops=1)
+ Planning Time: 1.571 ms
+ Trigger for constraint orders_customer_id_fkey on orders: time=0.336 calls=1
+ Trigger for constraint orders_address_id_fkey on orders: time=0.116 calls=1
+ Trigger for constraint order_items_order_id_fkey on order_items: time=0.183 calls=2
+ Trigger for constraint order_items_product_id_fkey on order_items: time=0.114 calls=2
+ Execution Time: 1.647 ms
+(42 rows)
+
+COMMIT
+                                                        QUERY PLAN                                                         
+---------------------------------------------------------------------------------------------------------------------------
+ Update on orders  (cost=0.28..8.29 rows=1 width=38) (actual time=0.115..0.117 rows=1 loops=1)
+   ->  Index Scan using orders_pkey on orders  (cost=0.28..8.29 rows=1 width=38) (actual time=0.017..0.019 rows=1 loops=1)
+         Index Cond: (order_id = 900001)
+ Planning Time: 0.089 ms
+ Execution Time: 2.033 ms
+(5 rows)
+
+                                                                 QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=20.85..59.29 rows=12 width=156) (actual time=0.052..0.057 rows=2 loops=1)
+   ->  Nested Loop  (cost=0.43..16.49 rows=1 width=104) (actual time=0.020..0.021 rows=1 loops=1)
+         ->  Index Scan using orders_pkey on orders o  (cost=0.28..8.29 rows=1 width=44) (actual time=0.012..0.012 rows=1 loops=1)
+               Index Cond: (order_id = 900001)
+         ->  Index Scan using customers_pkey on customers c  (cost=0.15..8.17 rows=1 width=68) (actual time=0.004..0.004 rows=1 loops=1)
+               Index Cond: (customer_id = o.customer_id)
+   ->  Hash Join  (cost=20.42..42.68 rows=12 width=56) (actual time=0.031..0.034 rows=2 loops=1)
+         Hash Cond: (p.product_id = oi.product_id)
+         ->  Seq Scan on products p  (cost=0.00..19.70 rows=970 width=36) (actual time=0.004..0.005 rows=12 loops=1)
+         ->  Hash  (cost=20.27..20.27 rows=12 width=28) (actual time=0.016..0.016 rows=2 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               ->  Bitmap Heap Scan on order_items oi  (cost=4.37..20.27 rows=12 width=28) (actual time=0.011..0.012 rows=2 loops=1)
+                     Recheck Cond: (order_id = 900001)
+                     Heap Blocks: exact=1
+                     ->  Bitmap Index Scan on order_items_pkey  (cost=0.00..4.37 rows=12 width=0) (actual time=0.006..0.006 rows=2 loops=1)
+                           Index Cond: (order_id = 900001)
+ Planning Time: 0.368 ms
+ Execution Time: 0.102 ms
+(18 rows)
+
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=139.22..139.25 rows=10 width=76) (actual time=1.780..1.784 rows=10 loops=1)
+   ->  Sort  (cost=139.22..141.65 rows=970 width=76) (actual time=1.778..1.781 rows=10 loops=1)
+         Sort Key: (sum(((oi.quantity)::numeric * oi.price_at_order))) DESC
+         Sort Method: quicksort  Memory: 25kB
+         ->  HashAggregate  (cost=106.14..118.26 rows=970 width=76) (actual time=1.720..1.733 rows=12 loops=1)
+               Group Key: p.product_id
+               Batches: 1  Memory Usage: 73kB
+               ->  Hash Join  (cost=31.83..77.14 rows=2320 width=56) (actual time=0.053..0.806 rows=2402 loops=1)
+                     Hash Cond: (oi.product_id = p.product_id)
+                     ->  Seq Scan on order_items oi  (cost=0.00..39.20 rows=2320 width=24) (actual time=0.012..0.222 rows=2402 loops=1)
+                     ->  Hash  (cost=19.70..19.70 rows=970 width=36) (actual time=0.018..0.019 rows=12 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                           ->  Seq Scan on products p  (cost=0.00..19.70 rows=970 width=36) (actual time=0.007..0.009 rows=12 loops=1)
+ Planning Time: 0.244 ms
+ Execution Time: 2.015 ms
+(15 rows)
+
+                                                           QUERY PLAN                                                            
+---------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using customers_email_key on customers  (cost=0.28..8.29 rows=1 width=100) (actual time=0.027..0.029 rows=1 loops=1)
+   Index Cond: (email = 'customer120@shop.test'::text)
+ Planning Time: 0.082 ms
+ Execution Time: 0.047 ms
+(4 rows)
+
+                                              QUERY PLAN                                               
+-------------------------------------------------------------------------------------------------------
+ Seq Scan on customers  (cost=0.00..17.88 rows=1 width=100) (actual time=1.296..1.407 rows=10 loops=1)
+   Filter: (name ~~* '%Customer 12%'::text)
+   Rows Removed by Filter: 240
+ Planning Time: 0.988 ms
+ Execution Time: 1.428 ms
+(5 rows)
