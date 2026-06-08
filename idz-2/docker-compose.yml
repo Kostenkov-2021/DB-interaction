@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: idz2-postgres
+    environment:
+      POSTGRES_DB: idz1
+      POSTGRES_USER: idz1
+      POSTGRES_PASSWORD: idz1
+    ports:
+      - "5433:5432"
+    volumes:
+      - idz2_pgdata:/var/lib/postgresql/data
+      - ../idz-1/sql:/sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U idz1 -d idz1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.12
+    container_name: idz2-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - idz2_chdata:/var/lib/clickhouse
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./config/users.xml:/etc/clickhouse-server/users.d/idz2-users.xml:ro
+      - ./config/config.d/listen.xml:/etc/clickhouse-server/config.d/listen.xml:ro
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  idz2_pgdata:
+  idz2_chdata:
