@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: idz1-postgres
+    environment:
+      POSTGRES_DB: idz1
+      POSTGRES_USER: idz1
+      POSTGRES_PASSWORD: idz1
+    ports:
+      - "5432:5432"
+    volumes:
+      - idz1_pgdata:/var/lib/postgresql/data
+      - ./sql:/sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U idz1 -d idz1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: idz1-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@shop.test
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  idz1_pgdata:
