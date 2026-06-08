@@ -1,0 +1,36 @@
+Запрос:
+SELECT toStartOfMonth(order_date) AS month, category, sum(quantity) AS sold_qty, sum(line_total) AS revenue
+FROM idz2.orders_flat
+GROUP BY month, category
+ORDER BY month, category;
+
+Реальный результат:
+
+month       category      sold_qty  revenue
+2026-01-01  Accessories   133344    383364000.00
+2026-01-01  Computers      70002   2990134800.00
+2026-01-01  Mobile         50001   3266732000.00
+2026-01-01  Network        66668    480009600.00
+2026-01-01  Peripherals   193343   2082439700.00
+2026-02-01  Accessories   126670    375341800.00
+2026-02-01  Computers      63338   2156789200.00
+2026-02-01  Mobile         50004   3266928000.00
+2026-02-01  Network        53336    384019200.00
+2026-02-01  Peripherals   173342   1924427300.00
+2026-03-01  Accessories   140010    391363200.00
+2026-03-01  Computers      66669   2573509800.00
+2026-03-01  Mobile         50001   3266732000.00
+2026-03-01  Network        80004    576028800.00
+2026-03-01  Peripherals   183341   2003423900.00
+2026-04-01  Accessories   133326    383315600.00
+2026-04-01  Computers      66664   2573230400.00
+2026-04-01  Mobile         49998   3266536000.00
+2026-04-01  Network        66664    479980800.00
+2026-04-01  Peripherals   183325   2003222200.00
+2026-05-01  Accessories   133320    383295000.00
+2026-05-01  Computers      66660   2573076000.00
+2026-05-01  Mobile         49995   3266340000.00
+2026-05-01  Network        66660    479952000.00
+2026-05-01  Peripherals   183315   2003133000.00
+
+Время выполнения: 0.039 с.

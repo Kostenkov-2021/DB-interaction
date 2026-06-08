@@ -1,0 +1,15 @@
+Команды:
+docker compose exec clickhouse clickhouse-client --query "SELECT currentUser(), version()"
+docker compose exec clickhouse clickhouse-client --user analyst --password analyst --query "SELECT currentUser(), version()"
+docker compose exec clickhouse clickhouse-client --user analyst --password analyst --query "CREATE DATABASE readonly_check"
+
+Реальный результат:
+
+currentUser()  version()
+default        24.12.6.70
+
+currentUser()  version()
+analyst        24.12.6.70
+
+Проверка режима только чтения:
+Code: 164. DB::Exception: analyst: Cannot execute query in readonly mode. (READONLY)
