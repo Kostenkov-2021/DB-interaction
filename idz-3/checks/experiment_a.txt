@@ -1,0 +1,29 @@
+
+===== A1 stop replica 3 =====
+ Container idz3-clickhouse3 Stopping 
+ Container idz3-clickhouse3 Stopped 
+
+===== A2 insert 20000 rows into replica 1 =====
+clickhouse1	experiment_a	170000	4082462873364136357
+
+===== A3 replica 2 received data =====
+   ┌─host────────┬───rows─┐
+1. │ clickhouse2 │ 170000 │
+   └─────────────┴────────┘
+
+===== A4 start replica 3 and capture replication_queue while it catches up =====
+ Container idz3-clickhouse3 Starting 
+ Container idz3-clickhouse3 Started 
+clickhouse1	experiment_a_queue_capture	175000	13702981528418816778
+
+===== A5 replica 3 queue is empty =====
+   ┌─replica_name─┬─queue_size─┬─inserts_in_queue─┬─merges_in_queue─┐
+1. │ node3        │          0 │                0 │               0 │
+   └──────────────┴────────────┴──────────────────┴─────────────────┘
+
+===== A6 all replicas match =====
+   ┌─host────────┬───rows─┬────────────data_hash─┐
+1. │ clickhouse1 │ 175000 │ 13702981528418816778 │
+2. │ clickhouse2 │ 175000 │ 13702981528418816778 │
+3. │ clickhouse3 │ 175000 │ 13702981528418816778 │
+   └─────────────┴────────┴──────────────────────┘
