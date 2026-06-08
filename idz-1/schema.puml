@@ -1,0 +1,60 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+entity "Клиенты\ncustomers" as customers {
+  * customer_id : integer <<PK>>
+  --
+  name : text
+  email : text <<unique>>
+  phone : text
+}
+
+entity "Адреса доставки\naddresses" as addresses {
+  * address_id : integer <<PK>>
+  --
+  customer_id : integer <<FK>>
+  address : text
+}
+
+entity "Категории\ncategories" as categories {
+  * category_id : integer <<PK>>
+  --
+  name : text <<unique>>
+}
+
+entity "Товары\nproducts" as products {
+  * product_id : integer <<PK>>
+  --
+  name : text <<unique>>
+  category_id : integer <<FK>>
+  price : numeric
+  attributes_jsonb : jsonb
+}
+
+entity "Заказы\norders" as orders {
+  * order_id : integer <<PK>>
+  --
+  customer_id : integer <<FK>>
+  address_id : integer <<FK>>
+  order_date : date
+  status : text
+  total_amount : numeric
+}
+
+entity "Позиции заказа\norder_items" as order_items {
+  * order_id : integer <<PK, FK>>
+  * product_id : integer <<PK, FK>>
+  --
+  quantity : integer
+  price_at_order : numeric
+  product_name_snapshot : text
+}
+
+customers ||--o{ addresses : "имеет"
+customers ||--o{ orders : "оформляет"
+addresses ||--o{ orders : "используется в"
+categories ||--o{ products : "содержит"
+products ||--o{ order_items : "входит в"
+orders ||--o{ order_items : "содержит"
+@enduml
