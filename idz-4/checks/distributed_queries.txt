@@ -1,0 +1,110 @@
+Топология `cluster_2x2`
+cluster_2x2	1	1	ch-s1-r1	172.21.0.8	9000	1
+cluster_2x2	1	2	ch-s1-r2	172.21.0.5	9000	0
+cluster_2x2	2	1	ch-s2-r1	172.21.0.7	9000	0
+cluster_2x2	2	2	ch-s2-r2	172.21.0.6	9000	0
+Глобальный count через Distributed
+2000000
+2000000
+Строки на каждой реплике
+ch-s1-r1	1002360
+ch-s1-r2	1002360
+ch-s2-r1	997640
+ch-s2-r2	997640
+Строки при чтении по одной реплике с каждого шарда
+ch-s1-r1	1002360
+ch-s2-r1	997640
+Топ пользователей, `GROUP BY` по ключу шардирования
+1	20
+2	20
+3	20
+4	20
+5	20
+6	20
+7	20
+8	20
+9	20
+10	20
+Проверка размещения пользователей
+1	1	['ch-s2-r2']	20
+2	1	['ch-s1-r1']	20
+3	1	['ch-s2-r2']	20
+4	1	['ch-s2-r2']	20
+5	1	['ch-s2-r2']	20
+6	1	['ch-s2-r2']	20
+7	1	['ch-s2-r2']	20
+8	1	['ch-s1-r1']	20
+9	1	['ch-s1-r1']	20
+10	1	['ch-s1-r1']	20
+Топ страниц, `GROUP BY` не по ключу шардирования
+/page/0	2000
+/page/1	2000
+/page/10	2000
+/page/100	2000
+/page/101	2000
+/page/102	2000
+/page/103	2000
+/page/104	2000
+/page/105	2000
+/page/106	2000
+JOIN через Distributed
+vip	product_view	166667	25000
+vip	page_view	166667	25000
+new	page_view	166667	25000
+regular	logout	166667	25000
+at_risk	search	166667	25000
+new	checkout	166667	25000
+at_risk	add_to_cart	166667	25000
+regular	search	166667	25000
+vip	checkout	166666	25000
+new	product_view	166666	25000
+regular	add_to_cart	166666	25000
+at_risk	logout	166666	25000
+Сравнение плана выполнения для `GLOBAL IN`
+Expression ((Project names + Projection))
+  MergingAggregated
+    Union
+      CreatingSets (Create sets before main query execution)
+        Aggregating
+          Expression (Before GROUP BY)
+            Filter ((WHERE + Change column names to column identifiers))
+              ReadFromMergeTree (default.events_local)
+      ReadFromRemote (Read from remote replica)
+Expression ((Project names + Projection))
+  MergingAggregated
+    Union
+      CreatingSets (Create sets before main query execution)
+        Aggregating
+          Expression (Before GROUP BY)
+            Filter ((WHERE + Change column names to column identifiers))
+              ReadFromMergeTree (default.events_local)
+      ReadFromRemote (Read from remote replica)
+Очередь distributed DDL
+query-0000000000	ch-s1-r1	Finished	CREATE TABLE IF NOT EXISTS default.events_local UUID \'361dbf58-c16d-411c-8c5d-957b70ef728d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/events_local\', \'{replica}\') PARTITION BY toYYYYMM(event_date) ORDER BY (user_id, event_time)
+query-0000000000	ch-s1-r2	Finished	CREATE TABLE IF NOT EXISTS default.events_local UUID \'361dbf58-c16d-411c-8c5d-957b70ef728d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/events_local\', \'{replica}\') PARTITION BY toYYYYMM(event_date) ORDER BY (user_id, event_time)
+query-0000000000	ch-s2-r1	Finished	CREATE TABLE IF NOT EXISTS default.events_local UUID \'361dbf58-c16d-411c-8c5d-957b70ef728d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/events_local\', \'{replica}\') PARTITION BY toYYYYMM(event_date) ORDER BY (user_id, event_time)
+query-0000000000	ch-s2-r2	Finished	CREATE TABLE IF NOT EXISTS default.events_local UUID \'361dbf58-c16d-411c-8c5d-957b70ef728d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/events_local\', \'{replica}\') PARTITION BY toYYYYMM(event_date) ORDER BY (user_id, event_time)
+query-0000000001	ch-s1-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'ee20b1fe-96db-4161-ba85-22f7c9c227b4\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000001	ch-s1-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'ee20b1fe-96db-4161-ba85-22f7c9c227b4\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000001	ch-s2-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'ee20b1fe-96db-4161-ba85-22f7c9c227b4\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000001	ch-s2-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'ee20b1fe-96db-4161-ba85-22f7c9c227b4\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000002	ch-s1-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'be8b74e5-e139-4a51-bf7a-210631e6b73b\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000002	ch-s1-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'be8b74e5-e139-4a51-bf7a-210631e6b73b\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000002	ch-s2-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'be8b74e5-e139-4a51-bf7a-210631e6b73b\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000002	ch-s2-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'be8b74e5-e139-4a51-bf7a-210631e6b73b\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000003	ch-s1-r1	Finished	CREATE TABLE IF NOT EXISTS default.events_distributed UUID \'830f8b18-e50f-4bd9-a587-6e4f84737b5d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = Distributed(\'cluster_2x2\', default, events_local, xxHash64(user_id))
+query-0000000003	ch-s1-r2	Finished	CREATE TABLE IF NOT EXISTS default.events_distributed UUID \'830f8b18-e50f-4bd9-a587-6e4f84737b5d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = Distributed(\'cluster_2x2\', default, events_local, xxHash64(user_id))
+query-0000000003	ch-s2-r1	Finished	CREATE TABLE IF NOT EXISTS default.events_distributed UUID \'830f8b18-e50f-4bd9-a587-6e4f84737b5d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = Distributed(\'cluster_2x2\', default, events_local, xxHash64(user_id))
+query-0000000003	ch-s2-r2	Finished	CREATE TABLE IF NOT EXISTS default.events_distributed UUID \'830f8b18-e50f-4bd9-a587-6e4f84737b5d\' ON CLUSTER cluster_2x2 (`event_date` Date, `event_time` DateTime, `user_id` UInt64, `session_id` String, `event_type` LowCardinality(String), `page_url` String, `duration_ms` UInt32) ENGINE = Distributed(\'cluster_2x2\', default, events_local, xxHash64(user_id))
+query-0000000004	ch-s1-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'80923fae-ab37-472f-baeb-66517ffad9f5\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000004	ch-s1-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'80923fae-ab37-472f-baeb-66517ffad9f5\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000004	ch-s2-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'80923fae-ab37-472f-baeb-66517ffad9f5\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000004	ch-s2-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_local UUID \'80923fae-ab37-472f-baeb-66517ffad9f5\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = ReplicatedMergeTree(\'/clickhouse/tables/{shard}/user_dict_local\', \'{replica}\') ORDER BY user_id
+query-0000000005	ch-s1-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'2e26fdf7-db75-418c-b297-8300bbf7cc9d\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000005	ch-s1-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'2e26fdf7-db75-418c-b297-8300bbf7cc9d\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000005	ch-s2-r1	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'2e26fdf7-db75-418c-b297-8300bbf7cc9d\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000005	ch-s2-r2	Finished	CREATE TABLE IF NOT EXISTS default.user_dict_distributed UUID \'2e26fdf7-db75-418c-b297-8300bbf7cc9d\' ON CLUSTER cluster_2x2 (`user_id` UInt64, `name` String, `segment` LowCardinality(String)) ENGINE = Distributed(\'cluster_2x2\', default, user_dict_local, xxHash64(user_id))
+query-0000000006	ch-s1-r1	Finished	TRUNCATE TABLE default.user_dict_local ON CLUSTER cluster_2x2
+query-0000000006	ch-s1-r2	Finished	TRUNCATE TABLE default.user_dict_local ON CLUSTER cluster_2x2
+query-0000000006	ch-s2-r1	Finished	TRUNCATE TABLE default.user_dict_local ON CLUSTER cluster_2x2
+query-0000000006	ch-s2-r2	Finished	TRUNCATE TABLE default.user_dict_local ON CLUSTER cluster_2x2
