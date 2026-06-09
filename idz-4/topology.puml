@@ -1,0 +1,47 @@
+@startuml
+title IDZ-4 ClickHouse cluster_2x2
+
+node "Keeper quorum" {
+  database "keeper1:9181" as k1
+  database "keeper2:9181" as k2
+  database "keeper3:9181" as k3
+}
+
+node "Shard 01" {
+  database "ch-s1-r1\n{shard}=01\n{replica}=s1r1" as s1r1
+  database "ch-s1-r2\n{shard}=01\n{replica}=s1r2" as s1r2
+}
+
+node "Shard 02" {
+  database "ch-s2-r1\n{shard}=02\n{replica}=s2r1" as s2r1
+  database "ch-s2-r2\n{shard}=02\n{replica}=s2r2" as s2r2
+}
+
+node "Optional Shard 03" {
+  database "ch-s3-r1\n{shard}=03\n{replica}=s3r1" as s3r1
+  database "ch-s3-r2\n{shard}=03\n{replica}=s3r2" as s3r2
+}
+
+s1r1 --> k1
+s1r1 --> k2
+s1r1 --> k3
+s1r2 --> k1
+s1r2 --> k2
+s1r2 --> k3
+s2r1 --> k1
+s2r1 --> k2
+s2r1 --> k3
+s2r2 --> k1
+s2r2 --> k2
+s2r2 --> k3
+
+s1r1 <--> s1r2 : ReplicatedMergeTree
+s2r1 <--> s2r2 : ReplicatedMergeTree
+s3r1 <--> s3r2 : ReplicatedMergeTree
+
+s1r1 ..> s1r1 : events_distributed\nxxHash64(user_id)
+s1r1 ..> s2r1
+s1r1 ..> s3r1 : after cluster_3x2
+
+@enduml
+
