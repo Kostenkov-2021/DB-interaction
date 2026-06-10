@@ -1,0 +1,74 @@
+services:
+  manticore-1:
+    image: manticoresearch/manticore:latest
+    container_name: idz5-manticore-1
+    restart: unless-stopped
+    environment:
+      searchd_listen: "9306:mysql|9308:http|$$ip:9312|$$ip:9315-9325:replication"
+      searchd_server_id: "1"
+    ports:
+      - "19306:9306"
+      - "19308:9308"
+      - "19312:9312"
+    networks:
+      idz5-net:
+        ipv4_address: 172.28.5.11
+    volumes:
+      - ./config/manticore1.conf:/etc/manticoresearch/manticore.conf
+      - manticore1-data:/var/lib/manticore
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+
+  manticore-2:
+    image: manticoresearch/manticore:latest
+    container_name: idz5-manticore-2
+    restart: unless-stopped
+    environment:
+      searchd_listen: "9306:mysql|9308:http|$$ip:9312|$$ip:9315-9325:replication"
+      searchd_server_id: "2"
+    ports:
+      - "29306:9306"
+      - "29308:9308"
+      - "29312:9312"
+    networks:
+      idz5-net:
+        ipv4_address: 172.28.5.12
+    volumes:
+      - ./config/manticore2.conf:/etc/manticoresearch/manticore.conf
+      - manticore2-data:/var/lib/manticore
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: idz5-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "15432:5432"
+    networks:
+      idz5-net:
+        ipv4_address: 172.28.5.20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+networks:
+  idz5-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.5.0/24
+
+volumes:
+  manticore1-data:
+  manticore2-data:
+  postgres-data:

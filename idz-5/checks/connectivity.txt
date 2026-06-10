@@ -1,0 +1,34 @@
+Проверка подключений
+====================
+
+Запрос:
+SHOW TABLES;
+
+Время выполнения: 5.250 мс
+
+Результат:
+[
+  {
+    "columns": [
+      {
+        "Table": {
+          "type": "string"
+        }
+      },
+      {
+        "Type": {
+          "type": "string"
+        }
+      }
+    ],
+    "data": [
+      {
+        "Table": "products",
+        "Type": "rt"
+      }
+    ],
+    "total": 1,
+    "error": "",
+    "warning": ""
+  }
+]

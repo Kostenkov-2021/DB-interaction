@@ -1,0 +1,88 @@
+phrase search
+=============
+
+Запрос:
+SELECT id, title, WEIGHT() AS w
+FROM products
+WHERE MATCH('"noise cancelling"')
+LIMIT 10;
+
+Время выполнения: 18.543 мс
+
+Результат:
+[
+  {
+    "columns": [
+      {
+        "id": {
+          "type": "long long"
+        }
+      },
+      {
+        "title": {
+          "type": "string"
+        }
+      },
+      {
+        "w": {
+          "type": "long long"
+        }
+      }
+    ],
+    "data": [
+      {
+        "id": 62024,
+        "title": "Aster Noise Cancelling 062024",
+        "w": 4515
+      },
+      {
+        "id": 62048,
+        "title": "Aster Noise Cancelling 062048",
+        "w": 4515
+      },
+      {
+        "id": 62072,
+        "title": "Aster Noise Cancelling 062072",
+        "w": 4515
+      },
+      {
+        "id": 62096,
+        "title": "Aster Noise Cancelling 062096",
+        "w": 4515
+      },
+      {
+        "id": 62120,
+        "title": "Aster Noise Cancelling 062120",
+        "w": 4515
+      },
+      {
+        "id": 62144,
+        "title": "Aster Noise Cancelling 062144",
+        "w": 4515
+      },
+      {
+        "id": 62168,
+        "title": "Aster Noise Cancelling 062168",
+        "w": 4515
+      },
+      {
+        "id": 62192,
+        "title": "Aster Noise Cancelling 062192",
+        "w": 4515
+      },
+      {
+        "id": 62216,
+        "title": "Aster Noise Cancelling 062216",
+        "w": 4515
+      },
+      {
+        "id": 62240,
+        "title": "Aster Noise Cancelling 062240",
+        "w": 4515
+      }
+    ],
+    "total": 10,
+    "error": "",
+    "warning": ""
+  }
+]

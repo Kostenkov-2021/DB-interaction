@@ -1,0 +1,89 @@
+basic search
+============
+
+Запрос:
+SELECT id, title, WEIGHT() AS w
+FROM products
+WHERE MATCH('wireless bluetooth headphones')
+ORDER BY w DESC
+LIMIT 10;
+
+Время выполнения: 17.951 мс
+
+Результат:
+[
+  {
+    "columns": [
+      {
+        "id": {
+          "type": "long long"
+        }
+      },
+      {
+        "title": {
+          "type": "string"
+        }
+      },
+      {
+        "w": {
+          "type": "long long"
+        }
+      }
+    ],
+    "data": [
+      {
+        "id": 62016,
+        "title": "Aster Wireless 062016",
+        "w": 4308
+      },
+      {
+        "id": 62017,
+        "title": "Orion Bluetooth 062017",
+        "w": 4308
+      },
+      {
+        "id": 62019,
+        "title": "Lumio Wireless Charging 062019",
+        "w": 4308
+      },
+      {
+        "id": 62040,
+        "title": "Aster Wireless 062040",
+        "w": 4308
+      },
+      {
+        "id": 62041,
+        "title": "Orion Bluetooth 062041",
+        "w": 4308
+      },
+      {
+        "id": 62043,
+        "title": "Lumio Wireless Charging 062043",
+        "w": 4308
+      },
+      {
+        "id": 62064,
+        "title": "Aster Wireless 062064",
+        "w": 4308
+      },
+      {
+        "id": 62065,
+        "title": "Orion Bluetooth 062065",
+        "w": 4308
+      },
+      {
+        "id": 62067,
+        "title": "Lumio Wireless Charging 062067",
+        "w": 4308
+      },
+      {
+        "id": 62088,
+        "title": "Aster Wireless 062088",
+        "w": 4308
+      }
+    ],
+    "total": 10,
+    "error": "",
+    "warning": ""
+  }
+]
