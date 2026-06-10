@@ -1,0 +1,88 @@
+proximity search
+================
+
+Запрос:
+SELECT id, title, WEIGHT() AS w
+FROM products
+WHERE MATCH('"portable speaker"~3')
+LIMIT 10;
+
+Время выполнения: 17.149 мс
+
+Результат:
+[
+  {
+    "columns": [
+      {
+        "id": {
+          "type": "long long"
+        }
+      },
+      {
+        "title": {
+          "type": "string"
+        }
+      },
+      {
+        "w": {
+          "type": "long long"
+        }
+      }
+    ],
+    "data": [
+      {
+        "id": 62004,
+        "title": "ByteWave Tablet 062004",
+        "w": 2393
+      },
+      {
+        "id": 62012,
+        "title": "ByteWave Portable Screen 062012",
+        "w": 2393
+      },
+      {
+        "id": 62028,
+        "title": "ByteWave Tablet 062028",
+        "w": 2393
+      },
+      {
+        "id": 62036,
+        "title": "ByteWave Portable Screen 062036",
+        "w": 2393
+      },
+      {
+        "id": 62052,
+        "title": "ByteWave Tablet 062052",
+        "w": 2393
+      },
+      {
+        "id": 62060,
+        "title": "ByteWave Portable Screen 062060",
+        "w": 2393
+      },
+      {
+        "id": 62076,
+        "title": "ByteWave Tablet 062076",
+        "w": 2393
+      },
+      {
+        "id": 62084,
+        "title": "ByteWave Portable Screen 062084",
+        "w": 2393
+      },
+      {
+        "id": 62100,
+        "title": "ByteWave Tablet 062100",
+        "w": 2393
+      },
+      {
+        "id": 62108,
+        "title": "ByteWave Portable Screen 062108",
+        "w": 2393
+      }
+    ],
+    "total": 10,
+    "error": "",
+    "warning": ""
+  }
+]

@@ -1,0 +1,26 @@
+UPDATE, DELETE, REPLACE
+=======================
+
+Сценарий: sql/04_update_delete.sql
+
+Отчётный `run_checks.py` по умолчанию не выполняет мутационные операции, чтобы не менять состояние реплицируемого RT-индекса во время проверки чтения. Для ручной демонстрации используйте:
+
+python scripts/run_checks.py --run-mutations
+
+UPDATE:
+SELECT id, title, price, rating FROM products WHERE id = 42;
+UPDATE products_cluster:products SET price = 49990, rating = 4.9 WHERE id = 42;
+SELECT id, title, price, rating FROM products WHERE id = 42;
+
+DELETE:
+SELECT id, title FROM products WHERE id = 43;
+DELETE FROM products_cluster:products WHERE id = 43;
+SELECT id, title FROM products WHERE id = 43;
+
+REPLACE:
+REPLACE INTO products_cluster:products (...) VALUES
+(44, 'Replaced gaming laptop with RTX graphics', ...);
+SELECT id, title, price, rating, tags FROM products WHERE id = 44;
+
+Комментарий:
+RT-индекс поддерживает документные изменения без полной переиндексации. В кластере запись выполняется через имя `products_cluster:products`, чтобы изменение реплицировалось на второй узел. В отличие от PostgreSQL это не OLTP-транзакции с MVCC и rollback, а обновление поискового индекса.

@@ -1,0 +1,238 @@
+Фасетный поиск и агрегации
+==========================
+
+Запрос:
+-- Агрегация по категориям
+SELECT category, COUNT(*) AS cnt, AVG(price) AS avg_price
+FROM products
+WHERE MATCH('gaming')
+GROUP BY category
+ORDER BY cnt DESC;
+
+-- Нативные фасеты ManticoreSearch
+SELECT id, title, price FROM products WHERE MATCH('gaming')
+FACET category ORDER BY COUNT(*) DESC
+FACET brand ORDER BY COUNT(*) DESC;
+;
+
+Время выполнения: 66.958 мс
+
+Результат:
+[
+  [
+    {
+      "columns": [
+        {
+          "category": {
+            "type": "string"
+          }
+        },
+        {
+          "cnt": {
+            "type": "long long"
+          }
+        },
+        {
+          "avg_price": {
+            "type": "double"
+          }
+        }
+      ],
+      "data": [
+        {
+          "category": "laptops",
+          "cnt": 8333,
+          "avg_price": 75083.571376
+        },
+        {
+          "category": "keyboards",
+          "cnt": 8333,
+          "avg_price": 75082.8272
+        }
+      ],
+      "total": 2,
+      "error": "",
+      "warning": ""
+    }
+  ],
+  [
+    {
+      "columns": [
+        {
+          "id": {
+            "type": "long long"
+          }
+        },
+        {
+          "title": {
+            "type": "string"
+          }
+        },
+        {
+          "price": {
+            "type": "float"
+          }
+        }
+      ],
+      "data": [
+        {
+          "id": 62010,
+          "title": "RedPeak Gaming Laptop 062010",
+          "price": 60360.859375
+        },
+        {
+          "id": 62014,
+          "title": "Voltix Gaming 062014",
+          "price": 60508.980469
+        },
+        {
+          "id": 62034,
+          "title": "RedPeak Gaming Laptop 062034",
+          "price": 61248.988281
+        },
+        {
+          "id": 62038,
+          "title": "Voltix Gaming 062038",
+          "price": 61396.441406
+        },
+        {
+          "id": 62058,
+          "title": "RedPeak Gaming Laptop 062058",
+          "price": 62136.308594
+        },
+        {
+          "id": 62062,
+          "title": "Voltix Gaming 062062",
+          "price": 62284.769531
+        },
+        {
+          "id": 62082,
+          "title": "RedPeak Gaming Laptop 062082",
+          "price": 63024.941406
+        },
+        {
+          "id": 62086,
+          "title": "Voltix Gaming 062086",
+          "price": 63172.820312
+        },
+        {
+          "id": 62106,
+          "title": "RedPeak Gaming Laptop 062106",
+          "price": 63912.730469
+        },
+        {
+          "id": 62110,
+          "title": "Voltix Gaming 062110",
+          "price": 64061.0
+        },
+        {
+          "id": 62130,
+          "title": "RedPeak Gaming Laptop 062130",
+          "price": 64800.03125
+        },
+        {
+          "id": 62134,
+          "title": "Voltix Gaming 062134",
+          "price": 64948.261719
+        },
+        {
+          "id": 62154,
+          "title": "RedPeak Gaming Laptop 062154",
+          "price": 65688.203125
+        },
+        {
+          "id": 62158,
+          "title": "Voltix Gaming 062158",
+          "price": 65836.71875
+        },
+        {
+          "id": 62178,
+          "title": "RedPeak Gaming Laptop 062178",
+          "price": 66576.171875
+        },
+        {
+          "id": 62182,
+          "title": "Voltix Gaming 062182",
+          "price": 66724.257812
+        },
+        {
+          "id": 62202,
+          "title": "RedPeak Gaming Laptop 062202",
+          "price": 67464.523438
+        },
+        {
+          "id": 62206,
+          "title": "Voltix Gaming 062206",
+          "price": 67612.179688
+        },
+        {
+          "id": 62226,
+          "title": "RedPeak Gaming Laptop 062226",
+          "price": 68352.429688
+        },
+        {
+          "id": 62230,
+          "title": "Voltix Gaming 062230",
+          "price": 68500.023438
+        }
+      ],
+      "total": 20,
+      "error": "",
+      "warning": ""
+    },
+    {
+      "columns": [
+        {
+          "category": {
+            "type": "string"
+          }
+        },
+        {
+          "count(*)": {
+            "type": "long long"
+          }
+        }
+      ],
+      "data": [
+        {
+          "category": "laptops",
+          "count(*)": 8333
+        },
+        {
+          "category": "keyboards",
+          "count(*)": 8333
+        }
+      ],
+      "total": 2,
+      "error": "",
+      "warning": ""
+    },
+    {
+      "columns": [
+        {
+          "brand": {
+            "type": "string"
+          }
+        },
+        {
+          "count(*)": {
+            "type": "long long"
+          }
+        }
+      ],
+      "data": [
+        {
+          "brand": "RedPeak",
+          "count(*)": 8333
+        },
+        {
+          "brand": "Voltix",
+          "count(*)": 8333
+        }
+      ],
+      "total": 2,
+      "error": "",
+      "warning": ""
+    }
+  ]
+]

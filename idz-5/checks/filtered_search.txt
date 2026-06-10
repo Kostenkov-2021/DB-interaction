@@ -1,0 +1,104 @@
+filtered search
+===============
+
+Запрос:
+SELECT id, title, price, rating
+FROM products
+WHERE MATCH('laptop') AND price BETWEEN 30000 AND 80000 AND rating >= 4.0
+ORDER BY rating DESC
+LIMIT 10;
+
+Время выполнения: 18.032 мс
+
+Результат:
+[
+  {
+    "columns": [
+      {
+        "id": {
+          "type": "long long"
+        }
+      },
+      {
+        "title": {
+          "type": "string"
+        }
+      },
+      {
+        "price": {
+          "type": "float"
+        }
+      },
+      {
+        "rating": {
+          "type": "float"
+        }
+      }
+    ],
+    "data": [
+      {
+        "id": 62003,
+        "title": "Lumio Dual Sim 062003",
+        "price": 60101.839844,
+        "rating": 4.9
+      },
+      {
+        "id": 62023,
+        "title": "Northline 4K Video 062023",
+        "price": 60841.351562,
+        "rating": 4.9
+      },
+      {
+        "id": 62043,
+        "title": "Lumio Wireless Charging 062043",
+        "price": 61581.359375,
+        "rating": 4.9
+      },
+      {
+        "id": 62063,
+        "title": "Northline Creator Kit 062063",
+        "price": 62321.128906,
+        "rating": 4.9
+      },
+      {
+        "id": 62083,
+        "title": "Lumio Phone Camera 062083",
+        "price": 63061.230469,
+        "rating": 4.9
+      },
+      {
+        "id": 62103,
+        "title": "Northline Portrait Lens 062103",
+        "price": 63801.488281,
+        "rating": 4.9
+      },
+      {
+        "id": 62123,
+        "title": "Lumio Dual Sim 062123",
+        "price": 64541.058594,
+        "rating": 4.9
+      },
+      {
+        "id": 62143,
+        "title": "Northline 4K Video 062143",
+        "price": 65281.929688,
+        "rating": 4.9
+      },
+      {
+        "id": 62163,
+        "title": "Lumio Wireless Charging 062163",
+        "price": 66021.226562,
+        "rating": 4.9
+      },
+      {
+        "id": 62183,
+        "title": "Northline Creator Kit 062183",
+        "price": 66761.789062,
+        "rating": 4.9
+      }
+    ],
+    "total": 10,
+    "error": "",
+    "warning": ""
+  }
+]

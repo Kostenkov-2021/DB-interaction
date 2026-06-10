@@ -1,0 +1,88 @@
+json search
+===========
+
+Запрос:
+SELECT id, title, tags
+FROM products
+WHERE MATCH('phone') AND tags.color = 'black'
+LIMIT 10;
+
+Время выполнения: 14.006 мс
+
+Результат:
+[
+  {
+    "columns": [
+      {
+        "id": {
+          "type": "long long"
+        }
+      },
+      {
+        "title": {
+          "type": "string"
+        }
+      },
+      {
+        "tags": {
+          "type": "json"
+        }
+      }
+    ],
+    "data": [
+      {
+        "id": 62004,
+        "title": "ByteWave Tablet 062004",
+        "tags": "{\"color\":\"black\",\"material\":\"steel\",\"wireless\":true,\"gaming\":false,\"memory\":\"8gb\"}"
+      },
+      {
+        "id": 24006,
+        "title": "Voltix Mechanical Keyboard 024006",
+        "tags": "{\"color\":\"black\",\"material\":\"fabric\",\"wireless\":false,\"gaming\":true,\"memory\":\"32gb\"}"
+      },
+      {
+        "id": 62010,
+        "title": "RedPeak Gaming Laptop 062010",
+        "tags": "{\"color\":\"black\",\"material\":\"plastic\",\"wireless\":false,\"gaming\":true,\"memory\":\"32gb\"}"
+      },
+      {
+        "id": 24012,
+        "title": "ByteWave Tablet 024012",
+        "tags": "{\"color\":\"black\",\"material\":\"aluminium\",\"wireless\":true,\"gaming\":false,\"memory\":\"8gb\"}"
+      },
+      {
+        "id": 62016,
+        "title": "Aster Wireless 062016",
+        "tags": "{\"color\":\"black\",\"material\":\"fabric\",\"wireless\":true,\"gaming\":false,\"memory\":\"8gb\"}"
+      },
+      {
+        "id": 24018,
+        "title": "RedPeak Gaming Laptop 024018",
+        "tags": "{\"color\":\"black\",\"material\":\"glass\",\"wireless\":false,\"gaming\":true,\"memory\":\"32gb\"}"
+      },
+      {
+        "id": 62022,
+        "title": "Voltix Mechanical Keyboard 062022",
+        "tags": "{\"color\":\"black\",\"material\":\"aluminium\",\"wireless\":false,\"gaming\":true,\"memory\":\"32gb\"}"
+      },
+      {
+        "id": 24024,
+        "title": "Aster Wireless 024024",
+        "tags": "{\"color\":\"black\",\"material\":\"steel\",\"wireless\":true,\"gaming\":false,\"memory\":\"8gb\"}"
+      },
+      {
+        "id": 62028,
+        "title": "ByteWave Tablet 062028",
+        "tags": "{\"color\":\"black\",\"material\":\"glass\",\"wireless\":true,\"gaming\":false,\"memory\":\"8gb\"}"
+      },
+      {
+        "id": 24030,
+        "title": "Voltix Mechanical Keyboard 024030",
+        "tags": "{\"color\":\"black\",\"material\":\"plastic\",\"wireless\":false,\"gaming\":true,\"memory\":\"32gb\"}"
+      }
+    ],
+    "total": 10,
+    "error": "",
+    "warning": ""
+  }
+]
