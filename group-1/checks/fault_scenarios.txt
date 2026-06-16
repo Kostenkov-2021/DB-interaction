@@ -1,0 +1,78 @@
+# Fault injection
+Tue Jun 16 13:14:10 RTZ 2026
+
+## 1. Потеря реплики ch-s1-r2
+Command: docker compose stop ch-s1-r2
+ Container group1-ch-s1-r2 Stopping 
+ Container group1-ch-s1-r2 Stopped 
+Query via nginx:
+ch-s2-r1	5000000
+Restore: docker compose start ch-s1-r2
+ Container group1-ch-s1-r2 Starting 
+ Container group1-ch-s1-r2 Started 
+
+## 2. Потеря шарда ch-s2-r1 + ch-s2-r2
+Command: docker compose stop ch-s2-r1 ch-s2-r2
+ Container group1-ch-s2-r1 Stopping 
+ Container group1-ch-s2-r2 Stopping 
+ Container group1-ch-s2-r2 Stopped 
+ Container group1-ch-s2-r1 Stopped 
+Distributed query result or expected error:
+Received exception from server (version 24.12.6):
+Code: 279. DB::Exception: Received from localhost:9000. DB::Exception: All connection tries failed. Log: 
+
+Code: 32. DB::Exception: Attempt to read after eof. (ATTEMPT_TO_READ_AFTER_EOF) (version 24.12.6.70 (official build))
+Code: 32. DB::Exception: Attempt to read after eof. (ATTEMPT_TO_READ_AFTER_EOF) (version 24.12.6.70 (official build))
+Code: 209. DB::NetException: Timeout: connect timed out: 172.19.0.10:9000 (ch-s2-r1:9000, 172.19.0.10, local address: 172.19.0.9:43016, connection timeout 1000 ms). (SOCKET_TIMEOUT) (version 24.12.6.70 (official build))
+Code: 209. DB::NetException: Timeout: connect timed out: 172.19.0.8:9000 (ch-s2-r2:9000, 172.19.0.8, local address: 172.19.0.9:37728, connection timeout 1000 ms). (SOCKET_TIMEOUT) (version 24.12.6.70 (official build))
+Code: 198. DB::NetException: Not found address of host: ch-s2-r1: (ch-s2-r1:9000, 172.19.0.10, local address: 172.19.0.9:43016). (DNS_ERROR) (version 24.12.6.70 (official build))
+Code: 198. DB::NetException: Not found address of host: ch-s2-r2: (ch-s2-r2:9000, 172.19.0.8, local address: 172.19.0.9:37728). (DNS_ERROR) (version 24.12.6.70 (official build))
+
+: While executing Remote. (ALL_CONNECTION_TRIES_FAILED)
+(query: SELECT count() FROM default.metrics_distributed)
+Restore: docker compose start ch-s2-r1 ch-s2-r2
+ Container group1-ch-s2-r2 Starting 
+ Container group1-ch-s2-r1 Starting 
+ Container group1-ch-s2-r2 Started 
+ Container group1-ch-s2-r1 Started 
+
+## 3. Потеря одного Keeper keeper-1
+Command: docker compose stop keeper-1
+ Container group1-keeper-1 Stopping 
+ Container group1-keeper-1 Stopped 
+INSERT into ReplicatedMergeTree with Keeper quorum alive:
+3
+Restore: docker compose start keeper-1
+ Container group1-keeper-1 Starting 
+ Container group1-keeper-1 Started 
+
+## 4. Потеря кворума Keeper keeper-1 + keeper-2
+Command: docker compose stop keeper-1 keeper-2
+ Container group1-keeper-2 Stopping 
+ Container group1-keeper-1 Stopping 
+ Container group1-keeper-1 Stopped 
+ Container group1-keeper-2 Stopped 
+INSERT into ReplicatedMergeTree should fail, SELECT from existing parts should work:
+Received exception from server (version 24.12.6):
+Code: 242. DB::Exception: Received from localhost:9000. DB::Exception: Table is in readonly mode: replica_path=/clickhouse/tables/01/metrics_local/replicas/ch-s1-r1. (TABLE_IS_READ_ONLY)
+(query: INSERT INTO default.metrics_local SELECT now(), 'fault-no-quorum', 'memory_usage', 1024.0)
+0
+5000001
+Restore: docker compose start keeper-1 keeper-2
+ Container group1-keeper-1 Starting 
+ Container group1-keeper-2 Starting 
+ Container group1-keeper-2 Started 
+ Container group1-keeper-1 Started 
+
+## Final status
+NAME                IMAGE                                COMMAND                  SERVICE      CREATED          STATUS                    PORTS
+group1-ch-s1-r1     clickhouse/clickhouse-server:24.12   "/entrypoint.sh"         ch-s1-r1     27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:18124->8123/tcp, [::]:18124->8123/tcp, 0.0.0.0:19000->9000/tcp, [::]:19000->9000/tcp
+group1-ch-s1-r2     clickhouse/clickhouse-server:24.12   "/entrypoint.sh"         ch-s1-r2     27 minutes ago   Up 4 minutes (healthy)    0.0.0.0:18125->8123/tcp, [::]:18125->8123/tcp, 0.0.0.0:19001->9000/tcp, [::]:19001->9000/tcp
+group1-ch-s2-r1     clickhouse/clickhouse-server:24.12   "/entrypoint.sh"         ch-s2-r1     27 minutes ago   Up 3 minutes (healthy)    0.0.0.0:18126->8123/tcp, [::]:18126->8123/tcp, 0.0.0.0:19002->9000/tcp, [::]:19002->9000/tcp
+group1-ch-s2-r2     clickhouse/clickhouse-server:24.12   "/entrypoint.sh"         ch-s2-r2     27 minutes ago   Up 3 minutes (healthy)    0.0.0.0:18127->8123/tcp, [::]:18127->8123/tcp, 0.0.0.0:19003->9000/tcp, [::]:19003->9000/tcp
+group1-grafana      grafana/grafana:11.4.0               "/run.sh"                grafana      27 minutes ago   Up 27 minutes             0.0.0.0:13000->3000/tcp, [::]:13000->3000/tcp
+group1-keeper-1     clickhouse/clickhouse-keeper:24.12   "/entrypoint.sh"         keeper-1     20 minutes ago   Up 18 seconds             2181/tcp, 9181/tcp, 10181/tcp, 44444/tcp
+group1-keeper-2     clickhouse/clickhouse-keeper:24.12   "/entrypoint.sh"         keeper-2     20 minutes ago   Up 18 seconds             2181/tcp, 9181/tcp, 10181/tcp, 44444/tcp
+group1-keeper-3     clickhouse/clickhouse-keeper:24.12   "/entrypoint.sh"         keeper-3     20 minutes ago   Up 20 minutes             2181/tcp, 9181/tcp, 10181/tcp, 44444/tcp
+group1-nginx        nginx:1.27-alpine                    "/docker-entrypoint.…"   nginx        27 minutes ago   Up 27 minutes             0.0.0.0:18123->8123/tcp, [::]:18123->8123/tcp
+group1-prometheus   prom/prometheus:v3.0.1               "/bin/prometheus --c…"   prometheus   27 minutes ago   Up 27 minutes             0.0.0.0:19090->9090/tcp, [::]:19090->9090/tcp

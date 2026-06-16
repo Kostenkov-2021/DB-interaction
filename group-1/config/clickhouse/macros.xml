@@ -1,0 +1,7 @@
+<clickhouse>
+    <macros>
+        <cluster>production</cluster>
+        <shard from_env="CLICKHOUSE_SHARD"/>
+        <replica from_env="CLICKHOUSE_REPLICA"/>
+    </macros>
+</clickhouse>
