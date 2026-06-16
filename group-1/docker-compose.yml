@@ -1,0 +1,179 @@
+x-clickhouse-common: &clickhouse-common
+  image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION:-24.12}
+  depends_on:
+    keeper-1:
+      condition: service_started
+    keeper-2:
+      condition: service_started
+    keeper-3:
+      condition: service_started
+  volumes:
+    - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+    - ./config/clickhouse/macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+    - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/group1-users.xml:ro
+    - ./sql:/sql:ro
+    - ./scripts:/scripts:ro
+    - ./checks:/checks
+  ulimits:
+    nofile:
+      soft: 262144
+      hard: 262144
+  healthcheck:
+    test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+    interval: 10s
+    timeout: 3s
+    retries: 10
+
+x-keeper-common: &keeper-common
+  image: clickhouse/clickhouse-keeper:${CLICKHOUSE_VERSION:-24.12}
+
+services:
+  keeper-1:
+    <<: *keeper-common
+    container_name: group1-keeper-1
+    hostname: keeper-1
+    volumes:
+      - ./config/keeper/keeper1.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+      - keeper_1_data:/var/lib/clickhouse-keeper
+
+  keeper-2:
+    <<: *keeper-common
+    container_name: group1-keeper-2
+    hostname: keeper-2
+    volumes:
+      - ./config/keeper/keeper2.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+      - keeper_2_data:/var/lib/clickhouse-keeper
+
+  keeper-3:
+    <<: *keeper-common
+    container_name: group1-keeper-3
+    hostname: keeper-3
+    volumes:
+      - ./config/keeper/keeper3.xml:/etc/clickhouse-keeper/keeper_config.xml:ro
+      - keeper_3_data:/var/lib/clickhouse-keeper
+
+  ch-s1-r1:
+    <<: *clickhouse-common
+    container_name: group1-ch-s1-r1
+    hostname: ch-s1-r1
+    environment:
+      CLICKHOUSE_SHARD: "01"
+      CLICKHOUSE_REPLICA: "ch-s1-r1"
+    volumes:
+      - ch_s1_r1_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/group1-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18124:8123"
+      - "19000:9000"
+
+  ch-s1-r2:
+    <<: *clickhouse-common
+    container_name: group1-ch-s1-r2
+    hostname: ch-s1-r2
+    environment:
+      CLICKHOUSE_SHARD: "01"
+      CLICKHOUSE_REPLICA: "ch-s1-r2"
+    volumes:
+      - ch_s1_r2_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/group1-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18125:8123"
+      - "19001:9000"
+
+  ch-s2-r1:
+    <<: *clickhouse-common
+    container_name: group1-ch-s2-r1
+    hostname: ch-s2-r1
+    environment:
+      CLICKHOUSE_SHARD: "02"
+      CLICKHOUSE_REPLICA: "ch-s2-r1"
+    volumes:
+      - ch_s2_r1_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/group1-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18126:8123"
+      - "19002:9000"
+
+  ch-s2-r2:
+    <<: *clickhouse-common
+    container_name: group1-ch-s2-r2
+    hostname: ch-s2-r2
+    environment:
+      CLICKHOUSE_SHARD: "02"
+      CLICKHOUSE_REPLICA: "ch-s2-r2"
+    volumes:
+      - ch_s2_r2_data:/var/lib/clickhouse
+      - ./config/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml:ro
+      - ./config/clickhouse/macros.xml:/etc/clickhouse-server/config.d/macros.xml:ro
+      - ./config/clickhouse/users.xml:/etc/clickhouse-server/users.d/group1-users.xml:ro
+      - ./sql:/sql:ro
+      - ./scripts:/scripts:ro
+      - ./checks:/checks
+    ports:
+      - "18127:8123"
+      - "19003:9000"
+
+  nginx:
+    image: nginx:${NGINX_VERSION:-1.27-alpine}
+    container_name: group1-nginx
+    depends_on:
+      - ch-s1-r1
+      - ch-s1-r2
+      - ch-s2-r1
+      - ch-s2-r2
+    ports:
+      - "18123:8123"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf:ro
+
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-v3.0.1}
+    container_name: group1-prometheus
+    ports:
+      - "19090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION:-11.4.0}
+    container_name: group1-grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "13000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards:ro
+
+volumes:
+  keeper_1_data:
+  keeper_2_data:
+  keeper_3_data:
+  ch_s1_r1_data:
+  ch_s1_r2_data:
+  ch_s2_r1_data:
+  ch_s2_r2_data:
+  prometheus_data:
+  grafana_data:

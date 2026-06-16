@@ -1,0 +1,54 @@
+<clickhouse>
+    <listen_host>0.0.0.0</listen_host>
+
+    <remote_servers>
+        <production>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>ch-s1-r1</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>ch-s1-r2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>ch-s2-r1</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>ch-s2-r2</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </production>
+    </remote_servers>
+
+    <zookeeper>
+        <node>
+            <host>keeper-1</host>
+            <port>9181</port>
+        </node>
+        <node>
+            <host>keeper-2</host>
+            <port>9181</port>
+        </node>
+        <node>
+            <host>keeper-3</host>
+            <port>9181</port>
+        </node>
+    </zookeeper>
+
+    <prometheus>
+        <endpoint>/metrics</endpoint>
+        <port>9363</port>
+        <metrics>true</metrics>
+        <events>true</events>
+        <asynchronous_metrics>true</asynchronous_metrics>
+        <status_info>true</status_info>
+    </prometheus>
+</clickhouse>
