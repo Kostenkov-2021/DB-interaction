@@ -1,0 +1,5 @@
+node	database	table	replica_name	is_leader	is_readonly	absolute_delay	queue_size	inserts_in_queue	merges_in_queue
+ch-s1-r1	default	metrics_local	ch-s1-r1	1	0	0	0	0	0
+ch-s1-r2	default	metrics_local	ch-s1-r2	1	0	0	0	0	0
+ch-s2-r1	default	metrics_local	ch-s2-r1	1	0	0	0	0	0
+ch-s2-r2	default	metrics_local	ch-s2-r2	1	0	0	0	0	0

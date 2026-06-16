@@ -1,0 +1,7 @@
+Nginx health before stopping replica
+ch-s1-r1
+
+Stop ch-s1-r2 from host and rerun this command to document failover:
+docker compose stop ch-s1-r2
+for i in 1 2 3 4 5; do curl -s 'http://localhost:18123/?query=SELECT%20hostName()%20FORMAT%20TSV'; done
+docker compose start ch-s1-r2

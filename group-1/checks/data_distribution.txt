@@ -1,0 +1,14 @@
+Rows on every replica
+node	rows
+ch-s1-r1	2525000
+ch-s1-r2	2525000
+ch-s2-r1	2475001
+ch-s2-r2	2475001
+Rows on one replica per shard
+shard_node	rows
+ch-s1-r1	2525000
+ch-s2-r2	2475001
+Shard balance via one replica per shard
+_shard_num	rows	ratio
+1	2525000	0.505
+2	2475001	0.495
